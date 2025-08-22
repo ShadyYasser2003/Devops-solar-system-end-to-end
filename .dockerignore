@@ -18,6 +18,9 @@ node_modules
 solar-system.png
 .nyc_output
 .talismanrc
-coverage
+coverage/
 test-results.xml
-
+kubernetes/
+.vscode/
+# environment files
+.github/workflows/*

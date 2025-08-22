@@ -11,3 +11,9 @@ test-results.xml
 *.terraform.lock.hcl
 # ignore all terraform directories
 .terraform/
+# local .env files
+.env
+# log files
+logs
+*.log
+npm-debug.log*
