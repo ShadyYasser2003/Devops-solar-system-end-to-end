@@ -44,8 +44,6 @@ jobs:
           name: Mocha-Test-Result
           path: test-results.xml
 
-      
-
   code-coverage:
             name: Coverage Report
             runs-on: ubuntu-latest
@@ -78,6 +76,45 @@ jobs:
                 name: Coverage-Report
                 path: coverage/
 
+  reports-s3:
+    needs: [unit-testing, code-coverage]
+    name: AMS S3 - Upload Reports
+    runs-on: ubuntu-latest
+    continue-on-error: true
+    steps:
+      - name: Download Mocha Test Artifact
+        uses: actions/download-artifact@v4
+        with:
+          name: Mocha-Test-Result
+        continue-on-error: true   # حتى لو مش موجود يكمل
+
+      - name: Download Code Coverage Artifact  
+        uses: actions/download-artifact@v4
+        with:
+          name: Code-Coverage-Result
+        continue-on-error: true   # برضه هنا
+
+      - name: Merge Test Files
+        run: |  
+          ls -ltr || true
+          mkdir reports-${{ github.sha }}
+          mv cobertura-coverage.xml reports-${{ github.sha }}/ || true
+          mv test-results.xml reports-${{ github.sha }}/ || true
+          ls -ltr reports-${{ github.sha }}/
+
+      - name: Upload to S3
+        uses: jakejarvis/s3-sync-action@master
+        with:
+          args: --follow-symlinks --delete
+        env:
+          AWS_S3_BUCKET: reports-bucket-shady-yasser
+          AWS_ACCESS_KEY_ID: ${{ secrets.AWS_ACCESS_KEY_ID }}
+          AWS_SECRET_ACCESS_KEY: ${{ secrets.AWS_SECRET_ACCESS_KEY }}   
+          AWS_REGION: 'us-east-1'
+          SOURCE_DIR: reports-${{ github.sha }}
+          DEST_DIR: reports/${{ github.sha }}  
+                
+                
   docker:
       name: Docker Image CI
       runs-on: ubuntu-latest
@@ -135,6 +172,9 @@ jobs:
           fi
       
           echo "🧹 Cleaning up..."
+          echo "----------------------------------------------"
+          echo "🧹 stop solar-system-app..."
           docker stop solar-system-app
+          echo "🧹 remove solar-system-app..."
           docker rm solar-system-app
       
