@@ -109,7 +109,13 @@ jobs:
           
           echo "✅ Final Reports Structure:"
           tree reports-${{ github.sha }} || ls -R reports-${{ github.sha }}
-
+      - name: Debug Reports Folder
+        run: |
+          echo "Current workspace:"
+          ls -R
+          echo "Reports folder content:"
+          ls -R reports-${{ github.sha }} || echo "Reports folder not found"
+            
       - name: Upload to S3 
         uses: jakejarvis/s3-sync-action@master
         with:
