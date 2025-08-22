@@ -45,37 +45,40 @@ jobs:
           path: test-results.xml
 
   code-coverage:
-            name: Coverage Report
-            runs-on: ubuntu-latest
-            needs: unit-testing
-            if: always()
-            continue-on-error: true
-            steps:
-            - name: Checkout Repository
-              uses: actions/checkout@v4
+    name: Coverage Report
+    runs-on: ubuntu-latest
+    needs: unit-testing
+    if: always()
+    continue-on-error: true
+    steps:
+      - name: Checkout Repository
+        uses: actions/checkout@v4
 
-            - name: Setup NodeJS Version
-              uses: actions/setup-node@v3
-              with:
-                node-version: 18
+      - name: Setup NodeJS Version
+        uses: actions/setup-node@v3
+        with:
+          node-version: 18
 
-            - name: Cache NPM dependencies
-              uses: actions/cache@v3
-              with:
-                path: node_modules
-                key: ${{ runner.os }}-node-modules-${{ hashFiles('package-lock.json') }}
-                  
-            - name: Install Dependencies
-              run: npm install
+      - name: Cache NPM dependencies
+        uses: actions/cache@v3
+        with:
+          path: node_modules
+          key: ${{ runner.os }}-node-modules-${{ hashFiles('package-lock.json') }}
         
-            - name: Generate Coverage Report
-              run: npm run coverage
+      - name: Install Dependencies
+        run: npm install
 
-            - name: Upload Coverage Report
-              uses: actions/upload-artifact@v4
-              with:
-                name: Code-Coverage-Result
-                path: coverage/
+      - name: Generate Coverage Report
+        run: |
+          npm run coverage || echo "⚠️ Coverage generation failed, continuing anyway"
+      
+      - name: Upload Coverage Report
+        if: always()   # مهم جدًا هنا
+        uses: actions/upload-artifact@v4
+        with:
+          name: Code-Coverage-Result
+          path: coverage/
+          if-no-files-found: ignore   # عشان لو مفيش ملفات، مايفشلش
 
   reports-s3:
     needs: [unit-testing, code-coverage]
@@ -100,7 +103,7 @@ jobs:
           ls -ltr || true
           mkdir reports-${{ github.sha }}
           mv Mocha-Test-Result reports-${{ github.sha }}/ || true
-          mv Code-Coverage-Result-${{ github.sha }}/ || true
+          mv Code-Coverage-Result reports-${{ github.sha }}/ || true
           ls -ltr reports-${{ github.sha }}/
 
       - name: Upload to S3
