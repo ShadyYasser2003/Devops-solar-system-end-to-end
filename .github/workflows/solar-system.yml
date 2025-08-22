@@ -90,21 +90,25 @@ jobs:
         uses: actions/download-artifact@v4
         with:
           name: Mocha-Test-Result
-        continue-on-error: true   # حتى لو مش موجود يكمل
+        continue-on-error: true
 
       - name: Download Code Coverage Artifact  
         uses: actions/download-artifact@v4
         with:
           name: Code-Coverage-Result
-        continue-on-error: true   # برضه هنا
+        continue-on-error: true
 
-      - name: Merge Test Files
+      - name: Organize Reports into Folders
         run: |  
-          ls -ltr || true
-          mkdir reports-${{ github.sha }}
-          mv Mocha-Test-Result reports-${{ github.sha }}/ || true
-          mv Code-Coverage-Result reports-${{ github.sha }}/ || true
-          ls -ltr reports-${{ github.sha }}/
+          mkdir -p reports-${{ github.sha }}/unit-testing
+          mkdir -p reports-${{ github.sha }}/code-coverage
+          
+          # لو ملفات موجودة حطها في فولدرها
+          mv Mocha-Test-Result/* reports-${{ github.sha }}/unit-testing/ 2>/dev/null || true
+          mv Code-Coverage-Result/* reports-${{ github.sha }}/code-coverage/ 2>/dev/null || true
+          
+          echo "✅ Final Reports Structure:"
+          tree reports-${{ github.sha }} || ls -R reports-${{ github.sha }}
 
       - name: Upload to S3
         uses: jakejarvis/s3-sync-action@master
@@ -116,7 +120,8 @@ jobs:
           AWS_SECRET_ACCESS_KEY: ${{ secrets.AWS_SECRET_ACCESS_KEY }}   
           AWS_REGION: 'us-east-1'
           SOURCE_DIR: reports-${{ github.sha }}
-          DEST_DIR: reports/${{ github.sha }}  
+          DEST_DIR: reports/${{ github.sha }}
+        
                                
   docker:
       name: Docker Image CI
