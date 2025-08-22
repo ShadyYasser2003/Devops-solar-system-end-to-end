@@ -14,9 +14,9 @@ env:
   MONGO_PASSWORD: ${{ secrets.MONGO_PASSWORD }}
 jobs:
   unit-testing:
-      name: Unit Testing
-      runs-on: ubuntu-latest
-      steps:
+    name: Unit Testing
+    runs-on: ubuntu-latest
+    steps:
       - name: Checkout Repository
         uses: actions/checkout@v4
 
@@ -42,14 +42,13 @@ jobs:
         uses: actions/upload-artifact@v4
         with:
           name: Mocha-Test-Result
-          path: test-results.xml
+          path: test-results.xml   # ملف واحد بس
 
   code-coverage:
     name: Coverage Report
     runs-on: ubuntu-latest
     needs: unit-testing
     if: always()
-    continue-on-error: true
     steps:
       - name: Checkout Repository
         uses: actions/checkout@v4
@@ -69,55 +68,43 @@ jobs:
         run: npm install
 
       - name: Generate Coverage Report
-        run: |
-          npm run coverage || echo "⚠️ Coverage generation failed, continuing anyway"
+        run: npm run coverage || echo "⚠️ Coverage generation failed, continuing anyway"
       
       - name: Upload Coverage Report
-        if: always()   # مهم جدًا هنا
+        if: always()
         uses: actions/upload-artifact@v4
         with:
           name: Code-Coverage-Result
           path: coverage/
-          if-no-files-found: ignore   # عشان لو مفيش ملفات، مايفشلش
+          if-no-files-found: ignore
 
   reports-s3:
-    needs: [unit-testing, code-coverage]
-    name: AMS S3 - Upload Reports
+    name: Upload Reports to S3
     runs-on: ubuntu-latest
-    continue-on-error: true
+    needs: [unit-testing, code-coverage]
+    if: always()
     steps:
       - name: Download Mocha Test Artifact
         uses: actions/download-artifact@v4
         with:
           name: Mocha-Test-Result
-        continue-on-error: true
+          path: ./unit-testing
 
       - name: Download Code Coverage Artifact  
         uses: actions/download-artifact@v4
         with:
           name: Code-Coverage-Result
-          path: ./ 
-        continue-on-error: true
+          path: ./code-coverage
 
-      - name: Organize Reports into Folders
-        run: |  
-          mkdir -p reports-${{ github.sha }}/unit-testing
-          mkdir -p reports-${{ github.sha }}/code-coverage
-          
-          # لو ملفات موجودة حطها في فولدرها
-          mv Mocha-Test-Result/* reports-${{ github.sha }}/unit-testing/ 2>/dev/null || true
-          mv ./Code-Coverage-Result/* reports-${{ github.sha }}/code-coverage/ 2>/dev/null || true
-          
+      - name: Organize Reports into Commit Folder
+        run: |
+          mkdir -p reports-${{ github.sha }}
+          mv unit-testing reports-${{ github.sha }}/ || true
+          mv code-coverage reports-${{ github.sha }}/ || true
+
           echo "✅ Final Reports Structure:"
           tree reports-${{ github.sha }} || ls -R reports-${{ github.sha }}
-          
-      - name: Debug Reports Folder
-        run: |
-          echo "Current workspace:"
-          ls -R
-          echo "Reports folder content:"
-          ls -R reports-${{ github.sha }} || echo "Reports folder not found"
-            
+
       - name: Upload to S3 
         uses: jakejarvis/s3-sync-action@master
         with:
@@ -129,7 +116,7 @@ jobs:
           AWS_REGION: 'us-east-1'
           SOURCE_DIR: reports-${{ github.sha }}
           DEST_DIR: reports/${{ github.sha }}
-        
+
                                
   # docker:
   #     name: Docker Image CI
