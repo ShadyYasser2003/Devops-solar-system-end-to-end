@@ -96,6 +96,7 @@ jobs:
         uses: actions/download-artifact@v4
         with:
           name: Code-Coverage-Result
+          path: ./ 
         continue-on-error: true
 
       - name: Organize Reports into Folders
@@ -105,10 +106,11 @@ jobs:
           
           # لو ملفات موجودة حطها في فولدرها
           mv Mocha-Test-Result/* reports-${{ github.sha }}/unit-testing/ 2>/dev/null || true
-          mv Code-Coverage-Result/* reports-${{ github.sha }}/code-coverage/ 2>/dev/null || true
+          mv ./Code-Coverage-Result/* reports-${{ github.sha }}/code-coverage/ 2>/dev/null || true
           
           echo "✅ Final Reports Structure:"
           tree reports-${{ github.sha }} || ls -R reports-${{ github.sha }}
+          
       - name: Debug Reports Folder
         run: |
           echo "Current workspace:"
