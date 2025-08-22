@@ -11,18 +11,24 @@ app.use(bodyParser.json());
 app.use(express.static(path.join(__dirname, '/')));
 app.use(cors())
 
-mongoose.connect(process.env.MONGO_URI, {
-    user: process.env.MONGO_USERNAME,
-    pass: process.env.MONGO_PASSWORD,
-    useNewUrlParser: true,
-    useUnifiedTopology: true
-}, function(err) {
-    if (err) {
-        console.log("error!! " + err)
-    } else {
-      //  console.log("MongoDB Connection Successful")
-    }
+// MongoDB connection
+const mongoUri = process.env.MONGO_URI; // مثلاً: mongodb+srv://<host>/<dbName>
+const username = process.env.MONGO_USERNAME;
+const password = process.env.MONGO_PASSWORD;
+
+mongoose.connect(mongoUri, {
+  user: username,
+  pass: password,
+  useNewUrlParser: true,
+  useUnifiedTopology: true,
 })
+  .then(() => {
+    console.log("✅ Connected to MongoDB");
+  })
+  .catch((err) => {
+    console.error("❌ MongoDB connection error:", err);
+  });
+
 
 var Schema = mongoose.Schema;
 
