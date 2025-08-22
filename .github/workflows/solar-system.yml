@@ -1,12 +1,13 @@
 name: Solar System Workflow
 
 on: 
-  workflow_dispatch:
   push:
     branches:
       - main
-      - 'feature/*'
-    
+      - develop
+  pull_request:
+    branches:
+      - main
 jobs:
     unit-testing:
         name: Unit Testing
@@ -18,7 +19,7 @@ jobs:
         - name: Setup NodeJS Version
           uses: actions/setup-node@v3
           with:
-            node-version: 20
+            node-version: 18
     
         - name: Install Dependencies
           run: npm install
@@ -27,7 +28,8 @@ jobs:
           run: npm test
           
         - name: Archive Test Result
-          uses: actions/upload-artifact@v3
+          uses: actions/upload-artifact@v4
           with:
             name: Mocha-Test-Result
             path: test-results.xml
+  
