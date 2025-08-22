@@ -1,0 +1,13 @@
+node_modules
+solar-system.png
+.nyc_output
+.talismanrc
+coverage
+test-results.xml
+# ignore all terraform state files
+*.tfstate
+*.tfstate.*
+# ignore all terraform lock files
+*.terraform.lock.hcl
+# ignore all terraform directories
+.terraform/
