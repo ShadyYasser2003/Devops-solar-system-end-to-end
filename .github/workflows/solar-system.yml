@@ -99,8 +99,8 @@ jobs:
         run: |  
           ls -ltr || true
           mkdir reports-${{ github.sha }}
-          mv cobertura-coverage.xml reports-${{ github.sha }}/ || true
-          mv test-results.xml reports-${{ github.sha }}/ || true
+          mv Mocha-Test-Result reports-${{ github.sha }}/ || true
+          mv Code-Coverage-Result-${{ github.sha }}/ || true
           ls -ltr reports-${{ github.sha }}/
 
       - name: Upload to S3
