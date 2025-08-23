@@ -211,9 +211,9 @@ jobs:
         run: |
           aws eks update-kubeconfig --region ${{ secrets.AWS_REGION }} --name ${{ secrets.EKS_CLUSTER_NAME }}
 
-          - name: Ensure namespace exists
-          run: |
-            kubectl get namespace dev || kubectl create namespace dev
+      - name: Ensure namespace exists
+        run: |
+          kubectl get namespace dev || kubectl create namespace dev
         
       - name: Deploy with Helm
         run: |
