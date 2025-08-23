@@ -4,7 +4,7 @@ kind: Ingress
 metadata:
   name: {{ .Chart.Name }}-ingress
   annotations:
-    kubernetes.io/ingress.class: {{ .Values.ingress.className }}
+    ingressClassName: {{ .Values.ingress.className }}
 spec:
   rules:
     - host: {{ .Values.ingress.host }}
