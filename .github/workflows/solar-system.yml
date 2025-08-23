@@ -221,8 +221,8 @@ jobs:
             --namespace dev \
             --set global.dockerHubUser=${{ vars.DOCKER_HUB_USERNAME }} \
             --set global.imageTag=${{ github.sha }} \
-            --set secrets.mongoUri=${{ secrets.MONGO_URL }} \
-            --set secrets.mongoUser=${{ secrets.MONGO_USER }} \
+            --set secrets.mongoUri=${{ secrets.MONGO_URI }} \
+            --set secrets.mongoUser=${{ secrets.MONGO_USERNAME }} \
             --set secrets.mongoPassword=${{ secrets.MONGO_PASSWORD }} \
             --set env.NODE_ENV=develpoment
         
