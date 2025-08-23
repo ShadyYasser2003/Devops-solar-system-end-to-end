@@ -24,3 +24,12 @@ kubernetes/
 .vscode/
 # environment files
 .github/workflows/*
+# ignore all terraform state files
+*.tfstate
+*.tfstate.*
+# ignore all terraform lock files
+*.terraform.lock.hcl
+# ignore all terraform directories
+.terraform/
+# ignore all terraform plan files
+terraform/*

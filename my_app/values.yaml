@@ -1,0 +1,29 @@
+replicaCount: 2
+
+global:
+  dockerHubUser: "your-dockerhub-username"   # ده هيتغير من الـ workflow
+  imageTag: "latest"                         # ده برضه هيتغير من الـ workflow
+
+image:
+  repository: "{{ .Values.global.dockerHubUser }}/solar-system-world"
+  tag: "{{ .Values.global.imageTag }}"
+  pullPolicy: IfNotPresent
+
+service:
+  type: ClusterIP
+  port: 80
+  targetPort: 3000
+
+ingress:
+  enabled: true
+  className: alb
+  host: myapp.com
+  path: /
+  
+resources: {}
+namespace: dev
+
+secrets:
+  mongoUri: ""
+  mongoUser: ""
+  mongoPassword: ""
