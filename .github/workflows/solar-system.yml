@@ -214,7 +214,7 @@ jobs:
         run: |
           kubectl get namespace dev || kubectl create namespace dev
         
-      - name: Deploy with Helm
+      - name: Deploy with Helm 
         run: |
           helm upgrade --install solar-system ./my_app \
             --namespace dev \
