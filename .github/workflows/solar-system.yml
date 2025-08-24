@@ -234,9 +234,12 @@ jobs:
   
       - name: Check App Health
         run: |
-          APP_URL="http://$(kubectl get svc app-chart-service -n dev -o jsonpath='{.status.loadBalancer.ingress[0].hostname}')/live"
+          APP_HOST=$(kubectl get svc app-chart-service -n dev -o jsonpath='{.status.loadBalancer.ingress[0].hostname}')
+          APP_URL="http://$APP_HOST/live"
+          echo "Testing application at $APP_URL"
+
           for i in {1..10}; do
-            RESPONSE=$(curl -s -o /dev/null -w "%{http_code}" $APP_URL || echo "000")
+            RESPONSE=$(curl -s -o /dev/null -w "%{http_code}" "$APP_URL" || echo "000")
             if [ "$RESPONSE" == "200" ]; then
               echo "✅ Application is healthy!"
               exit 0
@@ -244,5 +247,6 @@ jobs:
             echo "Waiting for app to be ready... ($i/10)"
             sleep 5
           done
+
           echo "❌ Application failed health check"
           exit 1
