@@ -182,6 +182,7 @@ jobs:
   dev-deploy:
     name: Deploy to Dev
     runs-on: ubuntu-latest
+    needs: docker
     outputs:
       APP_URL: ${{ steps.get_app_url.outputs.APP_URL }}
     steps:
