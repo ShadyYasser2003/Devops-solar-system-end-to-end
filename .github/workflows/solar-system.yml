@@ -180,9 +180,10 @@ jobs:
           docker rm solar-system-app
     
   dev-deploy:
+    name: Deploy to Dev
     runs-on: ubuntu-latest
-    needs: docker
-    if: github.ref == 'refs/heads/develop' 
+    outputs:
+      APP_URL: ${{ steps.get_app_url.outputs.APP_URL }}
     steps:
       - name: Checkout
         uses: actions/checkout@v4
@@ -211,7 +212,7 @@ jobs:
       - name: Ensure namespace exists
         run: |
           kubectl get namespace dev || kubectl create namespace dev
-      
+
       - name: Deploy with Helm
         run: |
           helm upgrade --install solar-system ./my_app \
@@ -221,26 +222,48 @@ jobs:
             --set secrets.mongoUri="${{ secrets.MONGO_URI }}" \
             --set env.NODE_ENV=development
 
+      - name: Wait for Pods to be Ready
+        run: |
+          echo "⏳ Waiting for all pods to be ready..."
+          kubectl rollout status deployment/app-chart -n dev --timeout=120s
+          echo "✅ Deployment rollout complete!"
+
+      - name: Check All Resources
+        run: |
+          echo "📋 Listing all resources in dev namespace:"
+          kubectl get all -n dev
+          echo "📋 Checking pod status for errors..."
+          kubectl get pods -n dev -o wide
+          kubectl describe pods -n dev
+
+      - name: Get App URL
+        id: get_app_url
+        run: |
+          APP_URL="http://$(kubectl get svc app-chart-service -n dev -o jsonpath='{.status.loadBalancer.ingress[0].hostname}')/live"
+          echo "✅ App URL: $APP_URL"
+          echo "APP_URL=$APP_URL" >> $GITHUB_OUTPUT
+
+
   integration-test:
     name: Integration Test on Dev
     runs-on: ubuntu-latest
     needs: dev-deploy
     if: github.ref == 'refs/heads/develop'
     steps:
-      - name: Check App Health
+      - name: Test App Health
         run: |
-          APP_URL="http://$(kubectl get svc app-chart-service -n dev -o jsonpath='{.status.loadBalancer.ingress[0].hostname}')/live"
+          APP_URL="${{ needs.dev-deploy.outputs.APP_URL }}"
           echo "Testing application at $APP_URL"
-          
-          for i in {1..10}; do
+
+          for i in {1..12}; do
             RESPONSE=$(curl -s -o /dev/null -w "%{http_code}" $APP_URL || echo "000")
             if [ "$RESPONSE" == "200" ]; then
               echo "✅ Application is healthy!"
               exit 0
             fi
-            echo "Waiting for app to be ready... ($i/10)"
-            sleep 5
+            echo "Waiting for app to be ready... ($i/12)"
+            sleep 10
           done
-          
+
           echo "❌ Application failed health check"
           exit 1
