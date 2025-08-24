@@ -241,7 +241,7 @@ jobs:
       - name: Set APP_URL Output (Secret Safe)
         id: set_app_url
         run: |
-          APP_URL="http://$(kubectl get svc app-chart-service -n dev -o jsonpath='{.status.loadBalancer.ingress[0].hostname}')/live"
+          APP_URL="http://$(kubectl get svc app-chart-service -n dev -o jsonpath='{.status.loadBalancer.ingress[0].hostname}')/live" >> GITHUB_OUTPUT
           
       - name: Check App Health
         run: |
