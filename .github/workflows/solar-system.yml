@@ -240,7 +240,7 @@ jobs:
     steps:
       - name: Check App Health
         run: |
-          APP_URL="${{ needs.dev-deploy.outputs.APP_URL }}"
+          APP_URL="ae1c502d2ee934eabbf0fb82b2a3c8e8-548436984.us-east-1.elb.amazonaws.com
           for i in {1..10}; do
             RESPONSE=$(curl -s -o /dev/null -w "%{http_code}" $APP_URL || echo "000")
             if [ "$RESPONSE" == "200" ]; then
