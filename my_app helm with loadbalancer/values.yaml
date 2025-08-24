@@ -16,15 +16,14 @@ service:
 
 ingress:
   enabled: true
-  className: nginx         # أو alb (لو عايز AWS ALB)
+  className: alb
   host: myapp.com
   path: /
-
+  
 resources: {}
-
 namespace: dev
 
 secrets:
   mongoUri: ""
 env:
-  NODE_ENV: "development"
+  NODE_ENV: "development"   

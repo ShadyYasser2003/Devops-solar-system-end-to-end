@@ -5,10 +5,8 @@ metadata:
   name: {{ .Chart.Name }}-ingress
   namespace: {{ .Release.Namespace }}
   annotations:
-    {{- if eq .Values.ingress.className "alb" }}
     alb.ingress.kubernetes.io/scheme: internet-facing
     alb.ingress.kubernetes.io/target-type: ip
-    {{- end }}
 spec:
   ingressClassName: {{ .Values.ingress.className }}
   rules:
@@ -19,7 +17,7 @@ spec:
             pathType: Prefix
             backend:
               service:
-                name: {{ .Chart.Name }}-service
+                name: app-chart-service
                 port:
                   number: {{ .Values.service.port }}
 {{- end }}
