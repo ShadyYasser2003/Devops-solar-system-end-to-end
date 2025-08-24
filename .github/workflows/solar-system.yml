@@ -210,18 +210,20 @@ jobs:
         run: |
           aws eks update-kubeconfig --region ${{ secrets.AWS_REGION }} --name ${{ secrets.EKS_CLUSTER_NAME }}
 
-      - name: Ensure namespace exists
-        run: |
-          kubectl get namespace dev || kubectl create namespace dev
+      # - name: Ensure namespace exists
+      #   run: |
+      #     kubectl get namespace dev || kubectl create namespace dev
 
       - name: Deploy with Helm
         run: |
           helm upgrade --install solar-system ./my_app \
             --namespace dev \
+            --create-namespace \
             --set global.dockerHubUser=${{ vars.DOCKER_HUB_USERNAME }} \
             --set global.imageTag=${{ github.sha }} \
             --set secrets.mongoUri="${{ secrets.MONGO_URI }}" \
             --set env.NODE_ENV=development
+        
 
       - name: Wait for Deployment Rollout
         run: |
