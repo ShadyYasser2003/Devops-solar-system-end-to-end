@@ -183,8 +183,8 @@ jobs:
     runs-on: ubuntu-latest
     needs: docker
     if: github.ref == 'refs/heads/develop'
-    outputs:
-      APP_URL: ${{ steps.set_app_url.outputs.APP_URL }}
+    # outputs:
+    #   APP_URL: ${{ steps.set_app_url.outputs.APP_URL }}
     steps:
       - name: Checkout
         uses: actions/checkout@v4
@@ -227,20 +227,25 @@ jobs:
         run: |
           kubectl rollout status deployment/app-chart -n dev
 
-      - name: Set APP_URL Output (Secret Safe)
-        id: set_app_url
-        run: |
-          APP_URL="http://$(kubectl get svc app-chart-service -n dev -o jsonpath='{.status.loadBalancer.ingress[0].hostname}')/live"
-          echo "APP_URL=$APP_URL" >> $GITHUB_OUTPUT
+      # - name: Set APP_URL Output (Secret Safe)
+      #   id: set_app_url
+      #   run: |
+      #     APP_URL="http://$(kubectl get svc app-chart-service -n dev -o jsonpath='{.status.loadBalancer.ingress[0].hostname}')/live"
+      #     echo "APP_URL=$APP_URL" >> $GITHUB_OUTPUT
 
   integration-test:
     runs-on: ubuntu-latest
     needs: dev-deploy
     if: github.ref == 'refs/heads/develop'
     steps:
+      - name: Set APP_URL Output (Secret Safe)
+        id: set_app_url
+        run: |
+          APP_URL="http://$(kubectl get svc app-chart-service -n dev -o jsonpath='{.status.loadBalancer.ingress[0].hostname}')/live"
+          
       - name: Check App Health
         run: |
-          APP_URL="${{ needs.dev-deploy.outputs.APP_URL }}"
+          APP_URL="${{ steps.set_app_url.outputs.APP_URL }}"
           for i in {1..10}; do
             RESPONSE=$(curl -s -o /dev/null -w "%{http_code}" $APP_URL || echo "000")
             if [ "$RESPONSE" == "200" ]; then
