@@ -183,6 +183,8 @@ jobs:
     runs-on: ubuntu-latest
     needs: docker
     if: github.ref == 'refs/heads/develop'
+    outputs:
+     ingress_ip: ${{ steps.get_ingress.outputs.ingress_ip }}
     steps:
       - name: Checkout
         uses: actions/checkout@v4
@@ -225,28 +227,39 @@ jobs:
         run: |
           kubectl rollout status deployment/app-chart -n dev
 
+      - name: Get Ingress IP
+        id: get_ingress
+        run: |
+          echo "Waiting for Ingress to get an IP..."
+          for i in {1..10}; do
+            INGRESS_IP=$(kubectl get ingress -n dev -o jsonpath='{.items[0].status.loadBalancer.ingress[0].hostname}')
+            if [ -n "$INGRESS_IP" ]; then
+              echo "Found Ingress IP: $INGRESS_IP"
+              echo "ingress_ip=$INGRESS_IP" >> $GITHUB_OUTPUT
+              exit 0
+            fi
+            echo "Waiting... ($i/10)"
+            sleep 15
+          done
+          echo "❌ Ingress did not get an IP in time"
+          exit 1
     
   integration-test:
     runs-on: ubuntu-latest
     needs: dev-deploy
     if: github.ref == 'refs/heads/develop'
+    env:
+      URL: ${{ needs.dev-deploy.outputs.ingress_ip }}
     steps:
-  
-      - name: Check App Health 
-        run: |
-          APP_HOST=$(kubectl get svc app-chart-service -n dev -o jsonpath='{.status.loadBalancer.ingress[0].hostname}')
-          APP_URL="http://$APP_HOST/live"
-          echo "Testing application at $APP_URL"
+        - name: test before testing  
 
-          for i in {1..10}; do
-            RESPONSE=$(curl -s -o /dev/null -w "%{http_code}" "$APP_URL" || echo "000")
-            if [ "$RESPONSE" == "200" ]; then
-              echo "✅ Application is healthy!"
-              exit 0
-            fi
-            echo "Waiting for app to be ready... ($i/10)"
-            sleep 5
-          done
+          run: | 
+            echo "Testing on $URL"
+            RESPONSE=$(curl -sS "http://$URL/live")
+            echo "Response: $RESPONSE"
+            echo "$RESPONSE" | jq -r '.status' | grep -i live
 
-          echo "❌ Application failed health check"
-          exit 1
+        - name: Test URL Output using CURL and JQ
+          run: |
+            echo "Testing on $URL"
+            curl -sS "http://$URL/live" | jq -r '.status' | grep -i live  

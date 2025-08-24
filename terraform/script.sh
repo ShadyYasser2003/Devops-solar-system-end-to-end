@@ -125,7 +125,7 @@ if [ "$ALB_URL" != "Not ready yet" ] && [ ! -z "$ALB_URL" ]; then
     echo "📝 Note: It may take a few minutes for the DNS to propagate"
 else
     echo "⏳ Load Balancer is still being created. Check again in a few minutes with:"
-    echo "   kubectl get ingress voting-ingress"
+    echo "   kubectl get ingress"
 fi
 
 # # -------------------------------
