@@ -13,19 +13,17 @@ app.use(cors());
 
 // MongoDB connection
 const mongoUri = process.env.MONGO_URI;
-const username = process.env.MONGO_USERNAME;
-const password = process.env.MONGO_PASSWORD;
 
 mongoose.connect(mongoUri, {
-  user: username,
-  pass: password,
+  useNewUrlParser: true,
+  useUnifiedTopology: true,
 })
   .then(() => {
-    console.log("✅ Connected to MongoDB");
+    console.log("✅ Connected to MongoDB Atlas");
   })
   .catch((err) => {
     console.error("❌ MongoDB connection error:", err);
-    process.exit(1); // يخرج لو فشل الاتصال
+    process.exit(1);
   });
 
 const Schema = mongoose.Schema;

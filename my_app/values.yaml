@@ -25,7 +25,5 @@ namespace: dev
 
 secrets:
   mongoUri: ""
-  mongoUser: ""
-  mongoPassword: ""
 env:
   NODE_ENV: "development"   

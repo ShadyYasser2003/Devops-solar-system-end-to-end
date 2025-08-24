@@ -10,9 +10,7 @@ on:
       - main
 env:
   MONGO_URI: ${{ secrets.MONGO_URI }}
-  MONGO_USERNAME: ${{ secrets.MONGO_USERNAME }}
-  MONGO_PASSWORD: ${{ secrets.MONGO_PASSWORD }}
-
+  
 jobs:
   
   # unit-testing:
@@ -146,8 +144,7 @@ jobs:
       - name: Docker Image Test
         env:
           MONGO_URI: ${{ secrets.MONGO_URI }}
-          MONGO_USERNAME: ${{ secrets.MONGO_USERNAME }}
-          MONGO_PASSWORD: ${{ secrets.MONGO_PASSWORD }}
+        
         run: |
           echo "🚀 Starting container for testing..."
       
@@ -214,7 +211,7 @@ jobs:
       - name: Ensure namespace exists
         run: |
           kubectl get namespace dev || kubectl create namespace dev
-        
+      
       - name: Deploy with Helm
         run: |
           helm upgrade --install solar-system ./my_app \
@@ -222,7 +219,6 @@ jobs:
             --set global.dockerHubUser=${{ vars.DOCKER_HUB_USERNAME }} \
             --set global.imageTag=${{ github.sha }} \
             --set secrets.mongoUri=${{ secrets.MONGO_URI }} \
-            --set secrets.mongoUser=${{ secrets.MONGO_USERNAME }} \
-            --set secrets.mongoPassword=${{ secrets.MONGO_PASSWORD }} \
-            --set env.NODE_ENV=develpoment
+            --set env.NODE_ENV=development
+
         
