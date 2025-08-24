@@ -10,7 +10,7 @@ on:
       - main
 env:
   MONGO_URI: ${{ secrets.MONGO_URI }}
-  
+
 jobs:
   
   # unit-testing:
@@ -218,7 +218,7 @@ jobs:
             --namespace dev \
             --set global.dockerHubUser=${{ vars.DOCKER_HUB_USERNAME }} \
             --set global.imageTag=${{ github.sha }} \
-            --set secrets.mongoUri=${{ secrets.MONGO_URI }} \
+            --set secrets.mongoUri="${{ secrets.MONGO_URI }}" \
             --set env.NODE_ENV=development
 
         
