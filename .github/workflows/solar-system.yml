@@ -232,7 +232,7 @@ jobs:
     if: github.ref == 'refs/heads/develop'
     steps:
   
-      - name: Check App Health
+      - name: Check App Health 
         run: |
           APP_HOST=$(kubectl get svc app-chart-service -n dev -o jsonpath='{.status.loadBalancer.ingress[0].hostname}')
           APP_URL="http://$APP_HOST/live"
