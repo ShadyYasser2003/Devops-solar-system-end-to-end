@@ -184,7 +184,7 @@ jobs:
     needs: docker
     if: github.ref == 'refs/heads/develop'
     outputs:
-     ingress_ip: ${{ steps.get_ingress.outputs.ingress_ip }}
+     ingress_ip: ${{ steps.get_ingress.outputs.ingress_url }}
     steps:
       - name: Checkout
         uses: actions/checkout@v4
@@ -212,7 +212,11 @@ jobs:
 
       - name: Ensure namespace exists
         run: |
-          kubectl get namespace dev || kubectl create namespace dev
+          kubectl get namespace dev >/dev/null 2>&1 || kubectl create namespace dev
+          kubectl label namespace dev app.kubernetes.io/managed-by=Helm --overwrite
+          kubectl annotate namespace dev meta.helm.sh/release-name=solar-system --overwrite
+          kubectl annotate namespace dev meta.helm.sh/release-namespace=dev --overwrite
+
         
       - name: Deploy with Helm 
         run: |
@@ -228,22 +232,38 @@ jobs:
         run: |
           kubectl rollout status deployment/app-chart -n dev
 
-      - name: Get Ingress IP
+      # - name: Get loadbalance IP
+      #   id: get_ingress
+      #   run: |
+      #     echo "Waiting for Ingress to get an IP..."
+      #     for i in {1..10}; do
+      #       INGRESS_IP=$(kubectl get ingress -n dev -o jsonpath='{.items[0].status.loadBalancer.ingress[0].hostname}')
+      #       if [ -n "$INGRESS_IP" ]; then
+      #         echo "Found Ingress IP: $INGRESS_IP"
+      #         echo "ingress_ip=$INGRESS_IP" >> $GITHUB_OUTPUT
+      #         exit 0
+      #       fi
+      #       echo "Waiting... ($i/10)"
+      #       sleep 15
+      #     done
+      #     echo "❌ Ingress did not get an IP in time"
+      #     exit 1
+
+      - name: Get Ingress NodePort Public URL
         id: get_ingress
         run: |
-          echo "Waiting for Ingress to get an IP..."
-          for i in {1..10}; do
-            INGRESS_IP=$(kubectl get ingress -n dev -o jsonpath='{.items[0].status.loadBalancer.ingress[0].hostname}')
-            if [ -n "$INGRESS_IP" ]; then
-              echo "Found Ingress IP: $INGRESS_IP"
-              echo "ingress_ip=$INGRESS_IP" >> $GITHUB_OUTPUT
-              exit 0
-            fi
-            echo "Waiting... ($i/10)"
-            sleep 15
-          done
-          echo "❌ Ingress did not get an IP in time"
-          exit 1
+          echo "🔎 Getting Public Node IP for Ingress..."
+          NODE_IP=$(kubectl get nodes -o jsonpath='{.items[0].status.addresses[?(@.type=="ExternalIP")].address}')
+          if [ -z "$NODE_IP" ]; then
+            echo "❌ No ExternalIP found on nodes"
+            exit 1
+          fi
+
+          NODE_PORT=$(kubectl get svc ingress-nginx-controller -n ingress-nginx -o jsonpath='{.spec.ports[?(@.port==80)].nodePort}')
+          INGRESS_URL="http://$NODE_IP:$NODE_PORT"
+          echo "✅ Found Public Ingress URL: $INGRESS_URL"
+          echo "ingress_url=$INGRESS_URL" >> $GITHUB_OUTPUT
+
     
   integration-test:
     runs-on: ubuntu-latest

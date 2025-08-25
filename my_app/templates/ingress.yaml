@@ -5,10 +5,7 @@ metadata:
   name: {{ .Chart.Name }}-ingress
   namespace: {{ .Release.Namespace }}
   annotations:
-    {{- if eq .Values.ingress.className "alb" }}
-    alb.ingress.kubernetes.io/scheme: internet-facing
-    alb.ingress.kubernetes.io/target-type: ip
-    {{- end }}
+    kubernetes.io/ingress.class: {{ .Values.ingress.className }}
 spec:
   ingressClassName: {{ .Values.ingress.className }}
   rules:
