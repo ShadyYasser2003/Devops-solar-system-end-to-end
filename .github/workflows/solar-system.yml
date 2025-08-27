@@ -273,7 +273,6 @@ jobs:
       URL: ${{ needs.dev-deploy.outputs.ingress_ip }}
     steps:
         - name: test before testing  
-
           run: | 
             echo "Testing on $URL"
             RESPONSE=$(curl -sS "http://$URL/live")
