@@ -275,11 +275,11 @@ jobs:
         - name: test before testing  
           run: | 
             echo "Testing on $URL"
-            RESPONSE=$(curl -sS "http://$URL/live")
+            RESPONSE=$(curl -sS "$URL/live")
             echo "Response: $RESPONSE"
             echo "$RESPONSE" | jq -r '.status' | grep -i live
 
         - name: Test URL Output using CURL and JQ
           run: |
             echo "Testing on $URL"
-            curl -sS "http://$URL/live" | jq -r '.status' | grep -i live  
+            curl -sS "$URL/live" | jq -r '.status' | grep -i live  
