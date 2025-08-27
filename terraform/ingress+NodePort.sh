@@ -43,7 +43,7 @@ kubectl wait --namespace ingress-nginx \
   --timeout=300s
 
 # -------------------------------
-# عرض البيانات
+# عرض البيانات 
 # ------------------------------- 
 echo "📊 Ingress Controller Service:"
 kubectl get svc -n ingress-nginx ingress-nginx-controller
