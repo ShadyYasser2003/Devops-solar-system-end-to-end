@@ -16,8 +16,8 @@ service:
 
 ingress:
   enabled: true
-  className: nginx         # أو alb (لو عايز AWS ALB)
-  host: myapp.com
+  className: nginx        
+  host: ""
   path: /
 
 resources: {}

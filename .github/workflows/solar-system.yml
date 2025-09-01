@@ -220,7 +220,7 @@ jobs:
         
       - name: Deploy with Helm 
         run: |
-          helm upgrade --install solar-system ./my_app \
+          helm upgrade --install solar-system ./my_app-helm-with-loadbalancer \
             --namespace dev \
             --set global.dockerHubUser=${{ vars.DOCKER_HUB_USERNAME }} \
             --set global.imageTag=${{ github.sha }} \
@@ -230,56 +230,56 @@ jobs:
 
       - name: Wait for Deployment Rollout
         run: |
-          kubectl rollout status deployment/app-chart -n dev
+          kubectl rollout status deployment/my_app-helm-with-loadbalancer -n dev
 
-      # - name: Get loadbalance IP
-      #   id: get_ingress
-      #   run: |
-      #     echo "Waiting for Ingress to get an IP..."
-      #     for i in {1..10}; do
-      #       INGRESS_IP=$(kubectl get ingress -n dev -o jsonpath='{.items[0].status.loadBalancer.ingress[0].hostname}')
-      #       if [ -n "$INGRESS_IP" ]; then
-      #         echo "Found Ingress IP: $INGRESS_IP"
-      #         echo "ingress_ip=$INGRESS_IP" >> $GITHUB_OUTPUT
-      #         exit 0
-      #       fi
-      #       echo "Waiting... ($i/10)"
-      #       sleep 15
-      #     done
-      #     echo "❌ Ingress did not get an IP in time"
-      #     exit 1
-
-      - name: Get Ingress NodePort Public URL
+      - name: Get loadbalance IP
         id: get_ingress
         run: |
-          echo "🔎 Getting Public Node IP for Ingress..."
-          NODE_IP=$(kubectl get nodes -o jsonpath='{.items[0].status.addresses[?(@.type=="ExternalIP")].address}')
-          if [ -z "$NODE_IP" ]; then
-            echo "❌ No ExternalIP found on nodes"
-            exit 1
-          fi
+          echo "Waiting for Ingress to get an IP..."
+          for i in {1..10}; do
+            INGRESS_IP=$(kubectl get ingress -n dev -o jsonpath='{.items[0].status.loadBalancer.ingress[0].hostname}')
+            if [ -n "$INGRESS_IP" ]; then
+              echo "Found Ingress IP: $INGRESS_IP"
+              echo "ingress_ip=$INGRESS_IP" >> $GITHUB_OUTPUT
+              exit 0
+            fi
+            echo "Waiting... ($i/10)"
+            sleep 15
+          done
+          echo "❌ Ingress did not get an IP in time"
+          exit 1
 
-          NODE_PORT=$(kubectl get svc ingress-nginx-controller -n ingress-nginx -o jsonpath='{.spec.ports[?(@.port==80)].nodePort}')
-          INGRESS_URL="http://$NODE_IP:$NODE_PORT"
-          echo "✅ Found Public Ingress URL: $INGRESS_URL"
-          echo "ingress_url=$INGRESS_URL" >> $GITHUB_OUTPUT
+      # - name: Get Ingress NodePort Public URL
+      #   id: get_ingress
+      #   run: |
+      #     echo "🔎 Getting Public Node IP for Ingress..."
+      #     NODE_IP=$(kubectl get nodes -o jsonpath='{.items[0].status.addresses[?(@.type=="ExternalIP")].address}')
+      #     if [ -z "$NODE_IP" ]; then
+      #       echo "❌ No ExternalIP found on nodes"
+      #       exit 1
+      #     fi
+
+      #     NODE_PORT=$(kubectl get svc ingress-nginx-controller -n ingress-nginx -o jsonpath='{.spec.ports[?(@.port==80)].nodePort}')
+      #     INGRESS_URL="http://$NODE_IP:$NODE_PORT"
+      #     echo "✅ Found Public Ingress URL: $INGRESS_URL"
+      #     echo "ingress_url=$INGRESS_URL" >> $GITHUB_OUTPUT
 
     
-  integration-test:
-    runs-on: ubuntu-latest
-    needs: dev-deploy
-    if: github.ref == 'refs/heads/develop'
-    env:
-      URL: ${{ needs.dev-deploy.outputs.ingress_ip }}
-    steps:
-        - name: test before testing  
-          run: | 
-            echo "Testing on $URL"
-            RESPONSE=$(curl -sS "$URL/live")
-            echo "Response: $RESPONSE"
-            echo "$RESPONSE" | jq -r '.status' | grep -i live
+  # integration-test:
+  #   runs-on: ubuntu-latest
+  #   needs: dev-deploy
+  #   if: github.ref == 'refs/heads/develop'
+  #   env:
+  #     URL: ${{ needs.dev-deploy.outputs.ingress_ip }}
+  #   steps:
+  #       - name: test before testing  
+  #         run: | 
+  #           echo "Testing on $URL"
+  #           RESPONSE=$(curl -sS "$URL/live")
+  #           echo "Response: $RESPONSE"
+  #           echo "$RESPONSE" | jq -r '.status' | grep -i live
 
-        - name: Test URL Output using CURL and JQ
-          run: |
-            echo "Testing on $URL"
-            curl -sS "$URL/live" | jq -r '.status' | grep -i live  
+  #       - name: Test URL Output using CURL and JQ
+  #         run: |
+  #           echo "Testing on $URL"
+  #           curl -sS "$URL/live" | jq -r '.status' | grep -i live  

@@ -6,11 +6,11 @@ metadata:
   namespace: {{ .Release.Namespace }}
   annotations:
     kubernetes.io/ingress.class: {{ .Values.ingress.className }}
+  
 spec:
   ingressClassName: {{ .Values.ingress.className }}
   rules:
     - host: {{ .Values.ingress.host }}
-      http:
         paths:
           - path: {{ .Values.ingress.path }}
             pathType: Prefix

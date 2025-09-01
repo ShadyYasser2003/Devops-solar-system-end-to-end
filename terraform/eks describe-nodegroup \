@@ -1,0 +1,40 @@
+nodegroup:
+  amiType: AL2_x86_64
+  capacityType: SPOT
+  clusterName: solar-cluster
+  createdAt: '2025-08-27T18:39:59.686000+03:00'
+  diskSize: 20
+  health:
+    issues: []
+  instanceTypes:
+  - t3.medium
+  labels: {}
+  modifiedAt: '2025-08-27T20:10:01.501000+03:00'
+  nodeRole: arn:aws:iam::464112108228:role/solar-cluster-node-role
+  nodegroupArn: arn:aws:eks:us-east-1:464112108228:nodegroup/solar-cluster/solar-cluster-node-group/aacc7617-cbb2-0d40-b3e0-16b586b21ea3
+  nodegroupName: solar-cluster-node-group
+  releaseVersion: 1.29.15-20250821
+  remoteAccess:
+    ec2SshKey: KEYPAIR
+    sourceSecurityGroups:
+    - sg-0aa82f9ffec609b15
+  resources:
+    autoScalingGroups:
+    - name: eks-solar-cluster-node-group-aacc7617-cbb2-0d40-b3e0-16b586b21ea3
+    remoteAccessSecurityGroup: sg-0ea6704d4180c3bea
+  scalingConfig:
+    desiredSize: 1
+    maxSize: 1
+    minSize: 1
+  status: ACTIVE
+  subnets:
+  - subnet-0c2853bfbe8f1af31
+  - subnet-06a5cb4996ae69afd
+  - subnet-083373c286a0093e0
+  tags:
+    Environment: development
+    ManagedBy: terraform
+    Project: voting-app
+  updateConfig:
+    maxUnavailable: 1
+  version: '1.29'

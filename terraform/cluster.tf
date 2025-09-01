@@ -6,9 +6,8 @@ resource "aws_eks_cluster" "eks" {
   role_arn = aws_iam_role.eks_cluster_role.arn
 
   vpc_config {
-    # aws_subnet.private[*].id,
-    subnet_ids              = concat( aws_subnet.public[*].id )
-    # endpoint_private_access = true
+    subnet_ids              = concat(aws_subnet.private[*].id, aws_subnet.public[*].id)
+    endpoint_private_access = true
     endpoint_public_access  = true
     security_group_ids      = [aws_security_group.eks_nodes_sg.id]
   }
@@ -18,7 +17,7 @@ resource "aws_eks_cluster" "eks" {
   depends_on = [
     aws_iam_role_policy_attachment.eks_cluster_AmazonEKSClusterPolicy,
     aws_iam_role_policy_attachment.eks_cluster_AmazonEKSServicePolicy,
-    # aws_subnet.private,
+    aws_subnet.private,
     aws_subnet.public,
     aws_security_group.eks_nodes_sg
   ]
